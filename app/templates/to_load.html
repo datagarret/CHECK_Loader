@@ -1,0 +1,14 @@
+<html>
+    <body>
+        <div>
+          <p>Following need to be loaded:</p>
+        </div>
+        <ul>
+        {% for release in releases %}
+        <li>
+          {{ release }}
+        </li>
+        {% endfor %}
+      </ul>
+    </body>
+</html>

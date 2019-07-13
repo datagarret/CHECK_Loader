@@ -1,0 +1,5 @@
+CHECK
+CHECK_Population/
+venv/
+*.py[cod]
+
