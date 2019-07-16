@@ -9,10 +9,12 @@ from app.forms import UploadForm
 from CHECK.cpar.zip_extract import ExtractFiles
 from CHECK.cpar.flat_to_raw import HFSLoadData
 from CHECK.cpar.staging import Staging
+from CHECK.cpar.cost_categorization import CostCategorizer
 
 raw_data_dir = os.path.abspath('./CHECK_Population')
 initial_file_name = '2016_05'
 
+@app.route('/index', methods=['GET','POST'])
 @app.route('/', methods=['GET','POST'])
 def index():
 
@@ -43,8 +45,7 @@ def index():
         flash('Load is processomg!')
         return redirect(url_for('index'))
     return render_template('index.html', load=load, curr_release=curr_release, form=form)
-
-
+    
 
 @app.route('/load', methods=['GET', 'POST'])
 def load():
@@ -62,9 +63,9 @@ def load():
     flat_to_raw = HFSLoadData('CHECK_CPAR2', release_num, path)
     flat_to_raw.sql_query_generate()
 
-    output = flat_to_raw.load_table_inline()
+    raw_output = flat_to_raw.load_table_inline()
 
-    for table in output:
+    for table in raw_output:
         hfs_load_count_dict_import(table)
 
     stager = Staging('CHECK_CPAR2', release_num)
@@ -82,7 +83,12 @@ def load():
     db.session.add(load_count_info)
     db.session.commit()
 
-    return 'Data load for {} was completed!'.format(file_name)
+    table_load_info = raw_output + stage_output
+
+    categorizer = CostCategorizer('CHECK_CPAR2')
+    categorizer.categorize_wrapper()
+
+    return render_template('load_complete.html', curr_release=file_name, table_load_info=table_load_info)
 
 
 

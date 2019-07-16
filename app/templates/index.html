@@ -1,12 +1,10 @@
-<html>
-    <head>
-        <title>Welcome to CHECK Loader</title>
-    </head>
-    <body>
+{% extends "base.html" %}
+
+{% block content %}
         <h1>Hello!</h1>
 
             {% if load %}
-            <div><p>File <b>{{ curr_release }}</b> is ready to load submit the form below to start process</p><div>
+            <div><p>File <b>{{ curr_release }}</b> is ready to load! Submit the form below to start process</p><div>
 
               <form action="{{url_for("load")}}" method="post" novalidate>
                   {{ form.hidden_tag() }}
@@ -31,5 +29,4 @@
             {% endif %}
 
 
-    </body>
-</html>
+{% endblock %}
