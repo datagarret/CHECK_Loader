@@ -4,7 +4,7 @@ import re
 from flask import render_template, flash, redirect, url_for, jsonify, request
 from app import app
 from app import db
-from app.models import HfsReleaseInfo, HfsLoadCountInfo
+from app.models import LoadReleaseInfo, LoadReleaseTableInfo
 from app.forms import UploadForm
 from CHECK.cpar.zip_extract import ExtractFiles
 from CHECK.cpar.flat_to_raw import HFSLoadData
@@ -22,7 +22,7 @@ def index():
     total_files = [i for i in total_files if re_name_check(i)]
     total_files.sort()
 
-    releases = HfsReleaseInfo.query.order_by('FileName').all()
+    releases = LoadReleaseInfo.query.order_by('FileName').all()
 
     if len(releases) == 0:
         release_num = 1
@@ -45,7 +45,7 @@ def index():
         flash('Load is processomg!')
         return redirect(url_for('index'))
     return render_template('index.html', load=load, curr_release=curr_release, form=form)
-    
+
 
 @app.route('/load', methods=['GET', 'POST'])
 def load():
@@ -74,11 +74,11 @@ def load():
     for table in stage_output:
         hfs_load_count_dict_import(table)
 
-    load_count_info = HfsReleaseInfo(ReleaseNum=release_num,
-                                     ReleaseDate=release_date,
-                                     LoadDate=load_date,
-                                     FileName=file_name,
-                                     LoadStatus='Complete')
+    load_count_info = LoadReleaseInfo(ReleaseNum=release_num,
+                                      ReleaseDate=release_date,
+                                      LoadDate=load_date,
+                                      FileName=file_name,
+                                      LoadStatus='Complete')
 
     db.session.add(load_count_info)
     db.session.commit()
@@ -93,11 +93,11 @@ def load():
 
 
 def hfs_load_count_dict_import(load_dict):
-    load_count_info = HfsLoadCountInfo(TableName=load_dict['table'],
-                                        ReleaseNum=load_dict['release_num'],
-                                        LoadDate=load_dict['load_date'],
-                                        NRows=load_dict['nrows'],
-                                        Type=load_dict['type'])
+    load_count_info = LoadReleaseTableInfo(TableName=load_dict['table'],
+                                           ReleaseNum=load_dict['release_num'],
+                                           LoadDate=load_dict['load_date'],
+                                           NRows=load_dict['nrows'],
+                                           Type=load_dict['type'])
     db.session.add(load_count_info)
     db.session.commit()
 

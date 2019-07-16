@@ -1,6 +1,6 @@
 from app import db
 
-class HfsReleaseInfo(db.Model):
+class LoadReleaseInfo(db.Model):
     ReleaseNum = db.Column(db.Integer, primary_key=True)
     ReleaseDate = db.Column(db.DateTime)
     LoadDate = db.Column(db.DateTime)
@@ -21,7 +21,7 @@ class HfsReleaseInfo(db.Model):
         return data
 
 
-class HfsLoadCountInfo(db.Model):
+class LoadReleaseTableInfo(db.Model):
     TableName = db.Column(db.String(128))
     ReleaseNum = db.Column(db.Integer, primary_key=True)
     LoadDate = db.Column(db.DateTime)
