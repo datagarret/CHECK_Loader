@@ -53,8 +53,8 @@ def load():
     file_name = request.form.get('file_name')
     release_num = request.form.get('release_num')
     release_date = request.form.get('release_date')
-    load_date = request.form.get('load_date')
-    print(type(load_date))
+    load_date = '{:%Y-%m-%d}'.format(date.today())
+
     path = os.path.join(raw_data_dir, file_name)
 
     extractor = ExtractFiles(path)
