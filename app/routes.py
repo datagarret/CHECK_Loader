@@ -44,16 +44,22 @@ def index():
     form = UploadForm(release_num=release_num, release_date=release_date, file_name=curr_release)
     if form.validate_on_submit():
         flash('Load is processing!')
-        return redirect(url_for('index'))
+        release_num = form.release_num.data
+        release_date = form.release_date.data
+        file_name = form.file_name.data
+        return redirect(url_for('load', release_num=release_num,file_name=file_name, release_date=release_date))
     return render_template('index.html', load=load, curr_release=curr_release, form=form)
 
+@app.route('/test')
+def test():
+    return url_for('load')
 
 @app.route('/load', methods=['GET', 'POST'])
 def load():
 
-    file_name = request.form.get('file_name')
-    release_num = request.form.get('release_num')
-    release_date = request.form.get('release_date')
+    file_name = request.args.get('file_name')
+    release_num = request.args.get('release_num')
+    release_date = request.args.get('release_date')
     load_date = '{:%Y-%m-%d}'.format(date.today())
 
     path = os.path.join(raw_data_dir, file_name)
