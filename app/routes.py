@@ -10,6 +10,7 @@ from CHECK.cpar.zip_extract import ExtractFiles
 from CHECK.cpar.flat_to_raw import HFSLoadData
 from CHECK.cpar.staging import Staging
 from CHECK.cpar.cost_categorization import CostCategorizer
+from CHECK.cpar.pat_info import RiskCategorizer, DiagnosisCategorizer
 
 raw_data_dir = os.path.abspath('./CHECK_Population')
 initial_file_name = '2016_05'
@@ -42,7 +43,7 @@ def index():
     release_date = date(int(release_date[0]), int(release_date[1]), 1)
     form = UploadForm(release_num=release_num, release_date=release_date, file_name=curr_release)
     if form.validate_on_submit():
-        flash('Load is processomg!')
+        flash('Load is processing!')
         return redirect(url_for('index'))
     return render_template('index.html', load=load, curr_release=curr_release, form=form)
 
@@ -84,9 +85,16 @@ def load():
     db.session.commit()
 
     table_load_info = raw_output + stage_output
-
+    #categorize stage claims
     categorizer = CostCategorizer('CHECK_CPAR2')
     categorizer.categorize_wrapper()
+    #update dx for the release
+    dxer = DiagnosisCategorizer('CHECK_CPAR2', release_date)
+    dxer.dx_wrapper(insert=True)
+    #update risk for the release
+    risker = RiskCategorizer('CHECK_CPAR2', release_date)
+    risker.risk_wrapper(insert=True)
+
 
     return render_template('load_complete.html', curr_release=file_name, table_load_info=table_load_info)
 
