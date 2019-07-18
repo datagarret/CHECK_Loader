@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 import os
 import re
 from flask import render_template, flash, redirect, url_for, jsonify, request
@@ -20,6 +20,7 @@ initial_file_name = '2016_05'
 def index():
 
     total_files = os.listdir(raw_data_dir)
+    #gets all data then only selects those that have the correct naming conventions
     total_files = [i for i in total_files if re_name_check(i)]
     total_files.sort()
 
@@ -43,16 +44,12 @@ def index():
     release_date = date(int(release_date[0]), int(release_date[1]), 1)
     form = UploadForm(release_num=release_num, release_date=release_date, file_name=curr_release)
     if form.validate_on_submit():
-        flash('Load is processing!')
         release_num = form.release_num.data
         release_date = form.release_date.data
         file_name = form.file_name.data
-        return redirect(url_for('load', release_num=release_num,file_name=file_name, release_date=release_date))
+        return redirect(url_for('load', release_num=release_num, file_name=file_name, release_date=release_date))
     return render_template('index.html', load=load, curr_release=curr_release, form=form)
 
-@app.route('/test')
-def test():
-    return url_for('load')
 
 @app.route('/load', methods=['GET', 'POST'])
 def load():
@@ -92,17 +89,20 @@ def load():
 
     table_load_info = raw_output + stage_output
     #categorize stage claims
+    print('categorize')
     categorizer = CostCategorizer('CHECK_CPAR2')
     categorizer.categorize_wrapper()
+
     #update dx for the release
     dxer = DiagnosisCategorizer('CHECK_CPAR2', release_date)
     dxer.dx_wrapper(insert=True)
     #update risk for the release
+    print('risk')
     risker = RiskCategorizer('CHECK_CPAR2', release_date)
     risker.risk_wrapper(insert=True)
 
 
-    return render_template('load_complete.html', curr_release=file_name, table_load_info=table_load_info)
+    return render_template('load_complete.html', curr_release=file_name, table_load_info=table_load_info, title='Load Complete')
 
 
 
