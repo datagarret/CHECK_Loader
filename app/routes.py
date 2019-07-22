@@ -11,6 +11,7 @@ from CHECK.cpar.flat_to_raw import HFSLoadData
 from CHECK.cpar.staging import Staging
 from CHECK.cpar.cost_categorization import CostCategorizer
 from CHECK.cpar.pat_info import RiskCategorizer, DiagnosisCategorizer
+from sqlalchemy import desc
 
 raw_data_dir = os.path.abspath('./CHECK_Population')
 initial_file_name = '2016_05'
@@ -72,11 +73,26 @@ def load():
     for table in raw_output:
         hfs_load_count_dict_import(table)
 
+    print('staging')
     stager = Staging('CHECK_CPAR2', release_num)
     stage_output = stager.raw_to_stage_wrapper()
 
     for table in stage_output:
         hfs_load_count_dict_import(table)
+
+    table_load_info = raw_output + stage_output
+    #categorize stage claims
+    print('categorize')
+    categorizer = CostCategorizer('CHECK_CPAR2')
+    categorizer.categorize_wrapper()
+
+    #update dx for the release
+    dxer = DiagnosisCategorizer('CHECK_CPAR2', release_date, release_num)
+    dxer.dx_wrapper(insert=True)
+    #update risk for the release
+    print('risk')
+    risker = RiskCategorizer('CHECK_CPAR2', release_date, release_num)
+    risker.risk_wrapper(insert=True)
 
     load_count_info = LoadReleaseInfo(ReleaseNum=release_num,
                                       ReleaseDate=release_date,
@@ -87,24 +103,16 @@ def load():
     db.session.add(load_count_info)
     db.session.commit()
 
-    table_load_info = raw_output + stage_output
-    #categorize stage claims
-    print('categorize')
-    categorizer = CostCategorizer('CHECK_CPAR2')
-    categorizer.categorize_wrapper()
-
-    #update dx for the release
-    dxer = DiagnosisCategorizer('CHECK_CPAR2', release_date)
-    dxer.dx_wrapper(insert=True)
-    #update risk for the release
-    print('risk')
-    risker = RiskCategorizer('CHECK_CPAR2', release_date)
-    risker.risk_wrapper(insert=True)
-
-
     return render_template('load_complete.html', curr_release=file_name, table_load_info=table_load_info, title='Load Complete')
 
+@app.route('/load_info', methods=['GET','POST'])
+def load_info():
 
+    release_info = LoadReleaseInfo.query.order_by(desc('ReleaseDate')).all()
+
+    release_info = [i.to_dict() for i in release_info]
+
+    return render_template('load_history.html', release_info=release_info)
 
 def hfs_load_count_dict_import(load_dict):
     load_count_info = LoadReleaseTableInfo(TableName=load_dict['table'],
