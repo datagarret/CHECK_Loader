@@ -10,7 +10,7 @@ from CHECK.cpar.zip_extract import ExtractFiles
 from CHECK.cpar.flat_to_raw import HFSLoadData
 from CHECK.cpar.staging import Staging
 from CHECK.cpar.cost_categorization import CostCategorizer
-from CHECK.cpar.pat_info import RiskCategorizer, DiagnosisCategorizer
+from CHECK.cpar.pat_info import RiskCategorizer, DiagnosisCategorizer, PatInfoComplete
 from sqlalchemy import desc
 
 raw_data_dir = os.path.abspath('./CHECK_Population')
@@ -93,6 +93,9 @@ def load():
     print('risk')
     risker = RiskCategorizer('CHECK_CPAR2', release_date, release_num)
     risker.risk_wrapper(insert=True)
+
+    pic_maker = PatInfoComplete('CHECK_CPAR2', release_num)
+    pic_maker.pic_maker_wrapper()
 
     load_count_info = LoadReleaseInfo(ReleaseNum=release_num,
                                       ReleaseDate=release_date,
