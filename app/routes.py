@@ -13,7 +13,7 @@ from CHECK.cpar.cost_categorization import CostCategorizer
 from CHECK.cpar.pat_info import RiskCategorizer, DiagnosisCategorizer, PatInfoComplete
 from sqlalchemy import desc
 
-raw_data_dir = os.path.abspath('./CHECK_Population')
+raw_data_dir = os.path.abspath('./HFS_Claims')
 initial_file_name = '2016_05'
 
 @app.route('/index', methods=['GET','POST'])
